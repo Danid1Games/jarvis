@@ -1,0 +1,1682 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarvis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Expanded:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --concreto:#E8E6E1;
+  --placa:#FBFAF8;
+  --grafite:#22262B;
+  --aco:#3D5A80;
+  --sinal:#F5C518;
+  --fumaca:#7C8288;
+  --linha:#CFCCC5;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--concreto);
+  color:var(--grafite);
+  font-family:Archivo,system-ui,sans-serif;
+  font-size:16px;line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.app{max-width:680px;margin:0 auto;padding:22px 20px 80px}
+
+/* ---- cabeçalho ---- */
+header{display:flex;align-items:baseline;gap:12px;margin-bottom:22px}
+header h1{
+  font-family:"Archivo Expanded",Archivo,sans-serif;font-weight:700;
+  font-size:clamp(30px,8vw,44px);letter-spacing:-.02em;margin:0;
+}
+header .sabe{font-size:14px;color:var(--fumaca)}
+
+/* ---- barra de comando: o coração ---- */
+.barra{
+  background:var(--placa);
+  border:1px solid var(--linha);
+  border-left:5px solid var(--sinal);
+  border-radius:2px;
+  padding:14px 14px 12px;
+}
+.barra textarea{
+  width:100%;border:none;background:none;resize:none;
+  font:500 19px/1.45 Archivo,sans-serif;color:var(--grafite);
+  min-height:58px;padding:0;
+}
+.barra textarea:focus{outline:none}
+.barra textarea::placeholder{color:#AFB3B8}
+.acoes{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+
+button{font:inherit;cursor:pointer}
+.principal{
+  background:var(--grafite);color:var(--placa);border:none;border-radius:2px;
+  padding:11px 22px;font-weight:600;
+}
+.principal:disabled{background:var(--fumaca);cursor:default}
+.mic{
+  display:inline-flex;align-items:center;gap:8px;
+  background:none;border:1px solid var(--linha);border-radius:2px;
+  padding:10px 16px;color:var(--grafite);font-weight:500;
+}
+.mic .luz{width:8px;height:8px;border-radius:50%;background:var(--linha)}
+.mic.on{border-color:var(--sinal);background:var(--sinal)}
+.mic.on .luz{background:var(--grafite);animation:bate 1s ease-in-out infinite}
+@keyframes bate{0%,100%{opacity:.2}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.mic.on .luz{animation:none}}
+.mic:disabled{opacity:.4;cursor:default}
+
+button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{
+  outline:2px solid var(--aco);outline-offset:2px
+}
+
+/* ---- registro ---- */
+.modos{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--linha);border-radius:2px;overflow:hidden;width:fit-content}
+.modos button{background:var(--placa);border:none;padding:9px 20px;font-weight:500;color:var(--fumaca)}
+.modos button.ativo{background:var(--grafite);color:var(--placa)}
+.selo{font-size:12px;background:var(--sinal);color:var(--grafite);border-radius:2px;padding:1px 6px;margin-left:7px}
+.aovivo{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;color:var(--fumaca)}
+.bolha{width:9px;height:9px;border-radius:50%;background:var(--linha);flex:none}
+.bolha.no-ar{background:#2E7D4F}
+.bolha.falando{background:var(--sinal);animation:bate .7s ease-in-out infinite}
+.log{margin-top:26px;display:flex;flex-direction:column;gap:2px}
+.fala{padding:9px 0;border-bottom:1px solid var(--linha);font-size:16px}
+.fala.voce{color:var(--fumaca)}
+.fala.ele{color:var(--grafite);padding-left:14px;border-left:3px solid var(--aco);padding-top:7px;padding-bottom:7px}
+.fala.erro{color:#A8321F;padding-left:14px;border-left:3px solid #A8321F}
+.fala.novo{background:#FDF6D8;border-left:3px solid var(--sinal);padding:12px 14px}
+.fala.novo b{display:block;font-weight:600}
+.fala.novo pre{
+  margin:8px 0;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;
+  line-height:1.55;white-space:pre-wrap;word-break:break-word;color:#4A4E53;
+}
+.fala.novo .dupla{display:flex;gap:10px;margin-top:6px}
+
+/* ---- compromissos ---- */
+.evs{margin-top:26px}
+.ev{border-top:1px solid var(--linha);padding:11px 0;display:grid;grid-template-columns:1fr auto;gap:3px 10px}
+.ev:last-of-type{border-bottom:1px solid var(--linha)}
+.ev input.t{grid-column:1;border:none;background:none;font:600 17px Archivo,sans-serif;color:var(--grafite);width:100%;padding:1px 0}
+.quando{grid-column:1;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.quando input{border:none;background:none;font:inherit;font-size:15px;color:var(--aco);padding:1px 0}
+.quando input[type=date]{min-width:9.4em}
+.quando input[type=time]{min-width:5.4em}
+.rep{font-size:12px;color:var(--grafite);background:var(--sinal);border-radius:2px;padding:1px 6px}
+.x{grid-column:2;grid-row:1;background:none;border:none;color:var(--fumaca);font-size:21px;line-height:1;padding:0 3px}
+.gcal{grid-column:1;font-size:14px;color:var(--aco);text-decoration:none;border-bottom:1px solid var(--linha);justify-self:start;margin-top:2px}
+
+/* ---- painéis ---- */
+details{margin-top:28px;border-top:1px solid var(--linha);padding-top:14px}
+summary{
+  font-family:"Archivo Expanded",Archivo,sans-serif;font-weight:600;
+  font-size:17px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--fumaca);font-weight:400}
+details[open] summary::after{content:"–"}
+.dica{font-size:14px;color:var(--fumaca);margin:10px 0 0}
+.dica code{color:var(--grafite);font-family:inherit;font-weight:600}
+
+.hab{border-top:1px solid var(--linha);padding:11px 0;display:grid;grid-template-columns:1fr auto auto;gap:2px 10px;align-items:start}
+.hab:first-of-type{border-top:none}
+.hab b{grid-column:1;font-weight:600}
+.hab code{grid-column:1;font-size:13px;color:var(--fumaca);word-break:break-all;font-family:ui-monospace,Menlo,monospace}
+.link{background:none;border:none;color:var(--aco);text-decoration:underline;padding:0;font-size:14px}
+.link.perigo{color:#A8321F}
+
+label{display:block;margin-top:14px;font-size:14px;color:var(--fumaca)}
+input[type=range]{width:100%;margin-top:6px;accent-color:var(--aco)}
+input[type=text],select,textarea.cod{
+  width:100%;margin-top:5px;padding:10px;
+  border:1px solid var(--linha);border-radius:2px;background:var(--placa);
+  font:inherit;color:var(--grafite);
+}
+textarea.cod{min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;resize:vertical}
+.sec{background:var(--placa);border:1px solid var(--linha);padding:14px;margin-top:14px}
+.oculto{display:none}
+</style>
+
+<div class="app">
+  <header>
+    <h1>Jarvis</h1>
+    <span class="sabe" id="sabe"></span>
+  </header>
+
+  <div class="modos">
+    <button id="mTexto" class="ativo">Texto</button>
+    <button id="mVoz">Voz<span class="selo">sem limite diário</span></button>
+  </div>
+
+  <div class="barra">
+    <textarea id="cmd" rows="2" placeholder="Fala aí. Ou escreve."></textarea>
+    <div class="acoes">
+      <button class="principal" id="ir">Manda</button>
+      <button class="mic" id="mic"><span class="luz"></span>Falar</button>
+      <span class="dica" id="nota" style="margin:0"></span>
+    </div>
+    <div class="aovivo oculto" id="aovivo">
+      <span class="bolha" id="bolha"></span><span id="estadoLive">desligado</span>
+    </div>
+  </div>
+
+  <p class="dica oculto" id="explicaVoz" style="margin-top:10px">
+    No modo voz ele fala com a voz nativa do Google, muito melhor que a do navegador, e não gasta o limite
+    de pedidos por dia — só tokens por minuto, que é bem mais folgado. Em troca, ele não cria habilidades
+    novas aqui; pra isso volte pro modo texto.
+  </p>
+
+  <div class="log" id="log"></div>
+
+  <section class="evs oculto" id="evs">
+    <div id="lista"></div>
+    <p><button class="link" id="baixar">baixar estes compromissos (.ics)</button></p>
+  </section>
+
+  <details id="phab">
+    <summary>Habilidades</summary>
+    <div id="habs"></div>
+    <p><button class="link" id="nova">ensinar uma</button> ·
+       <button class="link" id="exp">exportar</button> ·
+       <button class="link" id="imp">importar</button>
+       <input type="file" id="impf" accept="application/json" class="oculto"></p>
+
+    <div class="sec oculto" id="editor">
+      <label for="hnome">Nome</label>
+      <input type="text" id="hnome" placeholder="Classroom">
+
+      <div id="facil">
+        <label for="sfrase">Quando eu disser</label>
+        <input type="text" id="sfrase" placeholder="abrir o {site}">
+        <label for="sacao">Você faz</label>
+        <select id="sacao">
+          <option value="falar">falar em voz alta</option>
+          <option value="mostrar">escrever na tela</option>
+          <option value="abrir">abrir um site</option>
+          <option value="timer">esperar e me avisar</option>
+        </select>
+        <label for="salvo" id="lalvo">Falando isto</label>
+        <input type="text" id="salvo" placeholder="beleza">
+        <label for="smin" id="lmin" class="oculto">Depois de quantos minutos</label>
+        <input type="text" id="smin" class="oculto" placeholder="5">
+      </div>
+
+      <div id="cru" class="oculto">
+        <label for="hgat">Gatilho (regex)</label>
+        <input type="text" id="hgat">
+        <label for="hcod">Código</label>
+        <textarea id="hcod" class="cod" spellcheck="false"></textarea>
+      </div>
+
+      <p style="margin-top:16px">
+        <button class="principal" id="hok">Salvar</button>
+        <button class="link" id="hmodo" style="margin-left:12px">ver o código</button>
+        <button class="link" id="hx" style="margin-left:12px">cancelar</button>
+      </p>
+    </div>
+    <p class="dica">Use <code>{chaves}</code> pra marcar a parte que muda: <code>abrir o {site}</code>.
+    Com barras, ele aceita qualquer uma das palavras: <code>{entra/entre/abre} no classroom</code>.</p>
+  </details>
+
+  <details>
+    <summary>Voz e aprendizado</summary>
+
+    <label for="voz">Voz dele</label>
+    <select id="voz"></select>
+    <p class="dica">As melhores são as que têm <code>Natural</code> ou <code>Online</code> no nome. No Edge do Windows elas são bem melhores que a padrão.</p>
+
+    <label for="vel">Velocidade <span id="velv">1.0</span></label>
+    <input type="range" id="vel" min="0.6" max="1.6" step="0.05" value="1">
+    <label for="tom">Tom <span id="tomv">1.0</span></label>
+    <input type="range" id="tom" min="0.5" max="1.5" step="0.05" value="1">
+    <p><button class="link" id="testar">ouvir um teste</button></p>
+
+    <label for="chave">Chave do Gemini — só para uso no seu PC</label>
+    <input type="text" id="chave" placeholder="AIza...">
+    <p class="dica">Pegue em <code>aistudio.google.com/apikey</code>. Com ela preenchida o aprendizado já funciona, sem Cloudflare.
+    <b>Nunca publique o arquivo na internet com a chave dentro</b> — quem abrir o site lê a chave no código-fonte e gasta sua cota. Pra publicar, use o Worker abaixo e apague a chave daqui.</p>
+
+    <label for="vozLive">Voz dele no modo voz</label>
+    <select id="vozLive"></select>
+    <p class="dica">Trocar aqui reconecta a conversa — a voz é escolhida na hora em que o canal abre.</p>
+
+    <label for="modeloLive">Modelo de voz (Live)</label>
+    <select id="modeloLive"><option value="">— clique em buscar —</option></select>
+    <p class="dica">Escolha um que tenha <code>native-audio</code> ou <code>dialog</code> no nome: são os que falam de verdade.</p>
+
+    <label for="modelo">Modelo de texto</label>
+    <select id="modelo"><option value="">— clique em buscar —</option></select>
+    <p><button class="link" id="buscarm">buscar os modelos da minha chave</button></p>
+
+    <label for="worker">Endereço do Worker — só quando for publicar</label>
+    <input type="text" id="worker" placeholder="https://...workers.dev">
+    <p class="dica">Sem isso tudo funciona, menos aprender sozinho. Como montar: veja o <code>worker.js</code>.</p>
+    <p><button class="link" id="wsalvar">salvar</button> · <span class="dica" id="gasto"></span></p>
+  </details>
+
+  <p class="dica" style="margin-top:28px">Habilidade que a IA escrever só roda depois que você ler e aprovar. Nunca aprove código que você não entendeu.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   MEMÓRIA
+   ============================================================ */
+const guardar = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} };
+const buscar  = (k,p) => { try { const j = localStorage.getItem(k); return j ? JSON.parse(j) : p; } catch(_){ return p; } };
+
+let events = [];
+let habilidades = buscar('jarvis.habilidades', null) || padrao();
+let workerUrl   = buscar('jarvis.worker', '');
+let chaveGemini = buscar('jarvis.chave', '');
+let modelo      = buscar('jarvis.modelo', '');
+let candidatos  = buscar('jarvis.modelos', []);
+let modeloLive  = buscar('jarvis.modeloLive', '');
+let vozEscolhida = buscar('jarvis.voz', '');
+let vel = buscar('jarvis.vel', 1);
+let tom = buscar('jarvis.tom', 1);
+
+/* ============================================================
+   TEXTO
+   ============================================================ */
+const ACENTOS = {'á':'a','à':'a','â':'a','ã':'a','ä':'a','é':'e','ê':'e','è':'e','í':'i','î':'i','ó':'o','ô':'o','õ':'o','ö':'o','ú':'u','û':'u','ü':'u','ç':'c'};
+const normalize = s => s.toLowerCase().replace(/[áàâãäéêèíîóôõöúûüç]/g, c => ACENTOS[c]);
+
+const MESES = {janeiro:1,fevereiro:2,marco:3,abril:4,maio:5,junho:6,julho:7,agosto:8,setembro:9,outubro:10,novembro:11,dezembro:12,jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12};
+const SEMANA = {domingo:0,segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6};
+const BYDAY  = ['SU','MO','TU','WE','TH','FR','SA'];
+const EXTENSO = {uma:1,um:1,duas:2,dois:2,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10,onze:11,doze:12,treze:13,quatorze:14,catorze:14,quinze:15,dezesseis:16,dezessete:17,dezoito:18,dezenove:19,vinte:20,trinta:30,meia:30};
+
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const somaDias = (b,n) => { const d = new Date(b); d.setDate(d.getDate()+n); return iso(d); };
+
+function montarData(dia, mes, ano, hoje){
+  if (mes<1||mes>12||dia<1||dia>31) return false;
+  const a = ano ? (+ano<100 ? 2000+ +ano : +ano) : hoje.getFullYear();
+  const d = new Date(a, mes-1, dia);
+  if (!ano && d < new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())) d.setFullYear(a+1);
+  return iso(d);
+}
+function proximoDia(hoje, alvo, pular){
+  const d = new Date(hoje);
+  let falta = (alvo - d.getDay() + 7) % 7;
+  if (falta === 0) falta = 7;
+  d.setDate(d.getDate() + falta + (pular ? 7 : 0));
+  return iso(d);
+}
+
+/* interpreta uma frase com data; devolve null se não achar nenhuma */
+function parseData(linha, hoje){
+  let n = normalize(linha);
+  for (const [p,v] of Object.entries(EXTENSO))
+    n = n.replace(new RegExp('\\b'+p+'\\b','g'), String(v).padStart(p.length,' '));
+
+  const cortes = [];
+  const pegar = (re, fn) => {
+    const m = re.exec(n);
+    if (!m || fn(m) === false) return false;
+    cortes.push([m.index, m.index + m[0].length]);
+    return true;
+  };
+  const hhmm = (h,mi) => pad(Math.min(+h,23))+':'+pad(mi?+mi:0);
+  let inicio=null, fim=null, data=null, repete=null;
+
+  pegar(/\b(?:d[ae]s?\s+)?(\d{1,2})\s*(?:h|:)\s*(\d{2})?\s*(?:as|ate|a|-)\s*(\d{1,2})\s*(?:h|:)\s*(\d{2})?/, m=>{inicio=hhmm(m[1],m[2]);fim=hhmm(m[3],m[4]);})
+  || pegar(/\b(?:as\s+)?(\d{1,2})\s*(?:h|:)\s*(\d{2})?\b/, m=>{inicio=hhmm(m[1],m[2]);})
+  || pegar(/\bas\s+(\d{1,2})\b/, m=>{inicio=hhmm(m[1],0);});
+
+  pegar(/\b(?:tod[ao]s?\s+(?:os\s+|as\s+)?)(domingo|segunda|terca|quarta|quinta|sexta|sabado)(?:-?\s*feira)?\b/,
+        m=>{const a=SEMANA[m[1]];repete=BYDAY[a];data=proximoDia(hoje,a,false);});
+
+  if (!data){
+    pegar(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/, m=>{data=montarData(+m[1],+m[2],m[3],hoje);})
+    || pegar(/\b(?:dia\s+)?(\d{1,2})\s+de\s+([a-z]+)(?:\s+de\s+(\d{4}))?\b/, m=>{const x=MESES[m[2]];if(!x)return false;data=montarData(+m[1],x,m[3],hoje);})
+    || pegar(/\bdepois\s+de\s+amanha\b/, ()=>{data=somaDias(hoje,2);})
+    || pegar(/\bamanha\b/, ()=>{data=somaDias(hoje,1);})
+    || pegar(/\bhoje\b/, ()=>{data=somaDias(hoje,0);})
+    || pegar(/\b(?:(proxim[ao]|que\s+vem)\s+)?(domingo|segunda|terca|quarta|quinta|sexta|sabado)(?:-?\s*feira)?\b/, m=>{data=proximoDia(hoje,SEMANA[m[2]],!!m[1]);});
+  }
+  if (!data) return null;
+
+  let titulo = linha;
+  cortes.sort((a,b)=>b[0]-a[0]).forEach(([a,b])=>{titulo = titulo.slice(0,a)+' '+titulo.slice(b);});
+  titulo = titulo.replace(/\b(marca|marcar|anota|anotar|agenda|agendar|lembra|lembrar|dia|as|às|no|na|em|de|do|da|para|pra|à|que|eu|tenho|me)\b/gi,' ')
+                 .replace(/[-–,;:]+/g,' ').replace(/\s+/g,' ').trim();
+  titulo = titulo.charAt(0).toUpperCase()+titulo.slice(1);
+  return { titulo: titulo || 'Compromisso', data, inicio, fim, repete };
+}
+
+/* ============================================================
+   VOZ
+   ============================================================ */
+let vozes = [];
+function carregarVozes(){
+  vozes = (speechSynthesis.getVoices() || []).filter(v => /^pt/i.test(v.lang));
+  const nota = v => (/natural|online|neural/i.test(v.name) ? 0 : /google/i.test(v.name) ? 1 : 2);
+  vozes.sort((a,b) => nota(a) - nota(b) || a.name.localeCompare(b.name));
+
+  const sel = $('voz');
+  sel.innerHTML = '';
+  if (!vozes.length){
+    sel.innerHTML = '<option>nenhuma voz em português encontrada</option>';
+    return;
+  }
+  vozes.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v.name;
+    o.textContent = v.name + (nota(v) === 0 ? '  ← melhor' : '');
+    sel.append(o);
+  });
+  if (vozEscolhida && vozes.some(v => v.name === vozEscolhida)) sel.value = vozEscolhida;
+  else { vozEscolhida = vozes[0].name; sel.value = vozEscolhida; }
+}
+if (window.speechSynthesis){
+  carregarVozes();
+  speechSynthesis.onvoiceschanged = carregarVozes;
+}
+$('vel').value = vel; $('velv').textContent = Number(vel).toFixed(2);
+$('tom').value = tom; $('tomv').textContent = Number(tom).toFixed(2);
+$('vel').oninput = e => { vel = +e.target.value; $('velv').textContent = vel.toFixed(2); guardar('jarvis.vel', vel); };
+$('tom').oninput = e => { tom = +e.target.value; $('tomv').textContent = tom.toFixed(2); guardar('jarvis.tom', tom); };
+$('testar').onclick = () => falar('Oi Daniel, sou eu. Pode me pedir o que quiser.');
+
+$('voz').onchange = e => {
+  vozEscolhida = e.target.value;
+  guardar('jarvis.voz', vozEscolhida);
+  falar('Prazer, sou eu agora.');
+};
+
+function falar(texto){
+  if (!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(String(texto));
+  const v = vozes.find(x => x.name === vozEscolhida);
+  if (v) u.voice = v;
+  u.lang = v ? v.lang : 'pt-BR';
+  u.rate = vel; u.pitch = tom;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+/* ouvir */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, ouvindo = false, antes = '';
+if (!SR){
+  $('mic').disabled = true;
+  $('nota').textContent = 'Ditado só no Chrome ou Edge.';
+} else {
+  rec = new SR(); rec.lang='pt-BR'; rec.interimResults=true; rec.continuous=true;
+  rec.onresult = e => {
+    let t=''; for (let i=0;i<e.results.length;i++) t += e.results[i][0].transcript;
+    $('cmd').value = (antes ? antes+'\n' : '') + t;
+  };
+  rec.onerror = e => { pararMic(); $('nota').textContent = e.error==='not-allowed' ? 'Preciso do microfone.' : 'Ditado falhou.'; };
+  rec.onend = () => pararMic();
+  $('mic').onclick = () => {
+    if (modoVoz) return live.alternarMicrofone();
+    if (ouvindo){ rec.stop(); return; }
+    antes = $('cmd').value.trim();
+    try { rec.start(); } catch(_){ return; }
+    ouvindo = true;
+    $('mic').classList.add('on');
+    $('mic').lastChild.textContent = 'Ouvindo';
+    $('nota').textContent = '';
+  };
+}
+function pararMic(){
+  ouvindo = false;
+  $('mic').classList.remove('on');
+  $('mic').lastChild.textContent = 'Falar';
+}
+
+/* ============================================================
+   REGISTRO NA TELA
+   ============================================================ */
+function log(texto, classe){
+  const d = document.createElement('div');
+  d.className = 'fala ' + (classe || 'ele');
+  d.textContent = texto;
+  $('log').append(d);
+  d.scrollIntoView({ block:'nearest' });
+  return d;
+}
+
+/* ============================================================
+   O QUE UMA HABILIDADE PODE FAZER
+   ============================================================ */
+const api = {
+  falar: t => { log(t,'ele'); falar(t); },
+  mostrar: t => log(String(t),'ele'),
+  abrir: u => { log('Abrindo '+u,'ele'); window.open(u,'_blank','noopener'); },
+  hoje: () => new Date(),
+  agendar: ev => {
+    const e = Object.assign({titulo:'Compromisso',data:null,inicio:null,fim:null,repete:null}, ev);
+    events.push(e); desenharEventos();
+    log('Anotado: ' + e.titulo + ' em ' + e.data, 'ele');
+  },
+  aprender: nova => {
+    const limpa = validarHab(nova);
+    const j = habilidades.findIndex(h => h.nome === limpa.nome);
+    j < 0 ? habilidades.push(limpa) : habilidades[j] = limpa;
+    salvarHabs();
+    return limpa.nome;
+  },
+  esquecer: nome => {
+    const i = habilidades.findIndex(h => h.nome === nome);
+    if (i < 0) return false;
+    habilidades.splice(i,1); salvarHabs(); return true;
+  },
+  listar: () => habilidades.map(h => h.nome)
+};
+
+function validarHab(h){
+  if (!h || !h.nome || !h.gatilho) throw new Error('faltou nome ou gatilho');
+  try { new RegExp(h.gatilho); } catch(e){ throw new Error('gatilho inválido: '+e.message); }
+  try { new Function('m','api', h.acao || ''); } catch(e){ throw new Error('código não compila: '+e.message); }
+  return { nome:String(h.nome), gatilho:String(h.gatilho), acao:String(h.acao||'') };
+}
+
+function rodarHabilidade(linha){
+  const n = normalize(linha);
+  for (const h of habilidades.slice()){
+    let m = null;
+    try { m = new RegExp(h.gatilho,'id').exec(n); } catch(_){ continue; }
+    if (!m) continue;
+    let pedacos = m;
+    if (m.indices){ pedacos = m.indices.map(p => p ? linha.slice(p[0],p[1]) : undefined); pedacos.index = m.index; }
+    pedacos.linha = linha;
+    try { new Function('m','api', h.acao)(pedacos, api); }
+    catch(e){ log('A habilidade "'+h.nome+'" quebrou: '+e.message, 'erro'); }
+    return true;
+  }
+  return false;
+}
+
+/* ============================================================
+   MANDA
+   ============================================================ */
+$('cmd').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('ir').click(); }
+});
+
+$('ir').onclick = async () => {
+  if (ouvindo) rec.stop();
+  const linhas = $('cmd').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!linhas.length) return;
+  $('cmd').value = '';
+
+  for (const l of linhas){
+    log(l, 'voce');
+
+    if (rodarHabilidade(l)) continue;              // 1. alguma habilidade pegou
+    if (modoVoz && live.mandarTexto(l)) continue;  // 2. modo voz: mando pelo canal aberto
+
+    const ev = parseData(l, new Date());           // 2. tem data? vira compromisso
+    if (ev){ api.agendar(ev); continue; }
+
+    await aprenderSozinho(l);                      // 3. pede uma habilidade nova
+  }
+};
+
+/* ============================================================
+   APRENDER SOZINHO (precisa do Worker)
+   ============================================================ */
+
+/* quantos pedidos eu já fiz hoje — pra você ver de verdade */
+function contar(){
+  const hoje = iso(new Date());
+  const c = buscar('jarvis.gasto', {dia:hoje, n:0});
+  if (c.dia !== hoje){ c.dia = hoje; c.n = 0; }
+  c.n++;
+  guardar('jarvis.gasto', c);
+  mostrarGasto();
+}
+function mostrarGasto(){
+  const c = buscar('jarvis.gasto', {dia:iso(new Date()), n:0});
+  const hoje = c.dia === iso(new Date()) ? c.n : 0;
+  $('gasto').textContent = hoje + ' pedidos hoje (o limite grátis costuma ser ~1000 por dia)';
+}
+
+/* frases que já falharam: não gasto pedido duas vezes com a mesma */
+const jaTentei = new Set();
+
+/* as últimas trocas, pra ele lembrar do que a gente estava falando */
+let historico = [];
+function lembrar(quem, texto){
+  historico.push({ role: quem, parts:[{ text: String(texto) }] });
+  if (historico.length > 10) historico = historico.slice(-10);
+}
+const PROIBIDO = /\b(fetch|XMLHttpRequest|eval|document|window|localStorage|sessionStorage|indexedDB|import|require|Function|WebSocket|navigator)\b/;
+
+async function aprenderSozinho(frase){
+  if (!workerUrl && !chaveGemini){
+    log('Não conheço isso ainda, e sem a chave do Gemini eu não consigo conversar nem aprender. Cole a chave em "Voz e aprendizado", aqui embaixo.', 'erro');
+    return;
+  }
+
+  if (jaTentei.has(normalize(frase))){
+    log('Já tentei essa frase e não deu. Não vou gastar outro pedido.', 'erro');
+    return;
+  }
+
+  const pensando = log('Pensando…', 'ele');
+
+  const regras =
+`Você é o Jarvis, assistente pessoal do Daniel. Fala português do Brasil, direto e sem enrolação.
+
+Ele já sabe estas habilidades (nome — gatilho):
+${habilidades.map(h => '- ' + h.nome + ' — ' + h.gatilho).join('\n') || '- nenhuma ainda'}
+
+A cada mensagem você escolhe UMA de três saídas e responde SÓ com JSON.
+
+1) Se for conversa, pergunta, conta, explicação, piada — qualquer coisa que se resolve respondendo:
+{"tipo":"resposta","resposta":"sua resposta, curta"}
+
+2) Se ele está pedindo uma CAPACIDADE nova, algo que ele vai querer pedir de novo depois
+   (abrir sites, calcular, cronometrar, converter, lembrar de algo):
+{"tipo":"habilidade","nome":"","gatilho":"","acao":"","explicacao":""}
+
+3) Se a mensagem é uma das habilidades acima dita de outro jeito (outro verbo, outra conjugação,
+   sinônimo) e o gatilho dela não pega essa forma:
+{"tipo":"ampliar","nome":"nome exato da habilidade","gatilho":"regex novo que aceita o jeito antigo E este novo"}
+   Prefira ampliar a criar uma habilidade repetida. Use (?:entra|entre|abre) pra aceitar variações.
+
+Na dúvida, escolha resposta. Habilidade só quando faz sentido guardar pra sempre.
+
+Sobre a habilidade:
+gatilho: regex JavaScript. O texto testado chega em minúsculas e SEM acentos. Use () nas partes que variam.
+acao: corpo de função JavaScript. Recebe m (os grupos capturados, com o texto original) e api.
+api tem: api.falar(txt), api.mostrar(txt), api.abrir(url), api.agendar({titulo,data,inicio,fim}), api.hoje(), api.listar()
+data no formato 2026-09-25, inicio no formato "14:30".
+Proibido: fetch, document, window, eval, localStorage, navigator, import.
+explicacao: uma frase curta dizendo o que ela faz.
+
+Hoje é ${iso(new Date())}.`;
+
+  const corpo = {
+    systemInstruction:{ parts:[{ text: regras }] },
+    contents: historico.concat([{ role:'user', parts:[{ text: frase }] }]),
+    generationConfig:{
+      responseMimeType:'application/json',
+      maxOutputTokens: 3000,
+      temperature: 0.3,
+      // sem isto o modelo "pensa" e o pensamento come todo o orçamento
+      thinkingConfig:{ thinkingBudget: 0 }
+    }
+  };
+
+  let proposta;
+  try {
+    const texto = await pedirAoGemini(corpo, pensando);
+    try { proposta = JSON.parse(texto.replace(/```json|```/g,'').trim()); }
+    catch(_){ throw new Error('Respondeu, mas não em JSON: ' + texto.slice(0,120)); }
+  } catch(e){
+    pensando.remove();
+
+    // "Failed to fetch" = o navegador nem deixou sair. Quase sempre é file://
+    if (e instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(e.message)){
+      log(location.protocol === 'file:'
+        ? 'O navegador bloqueou a chamada porque a página foi aberta direto do arquivo (file://). Rode "python -m http.server 8000" na pasta e abra http://localhost:8000/' + location.pathname.split('/').pop()
+        : 'Não consegui falar com o Gemini. Veja se a internet está de pé e se a chave está certa.', 'erro');
+      return;
+    }
+    if (/ocupado|demanda/i.test(e.message)){
+      log(e.message, 'erro');   // problema do servidor, não da frase: pode tentar de novo
+      return;
+    }
+
+    jaTentei.add(normalize(frase));
+    log('Não consegui aprender: ' + e.message, 'erro');
+    return;
+  }
+
+  pensando.remove();
+
+  /* --- saída 1: era só conversa --- */
+  if (proposta.tipo === 'resposta' || (!proposta.gatilho && proposta.resposta)){
+    lembrar('user', frase);
+    lembrar('model', JSON.stringify({tipo:'resposta', resposta:proposta.resposta}));
+    api.falar(proposta.resposta || 'Não sei o que dizer.');
+    return;
+  }
+
+  /* --- saída 3: já sabia fazer, só não reconhecia a frase --- */
+  if (proposta.tipo === 'ampliar'){
+    const i = habilidades.findIndex(h => h.nome === proposta.nome);
+    if (i < 0){ log('Quis ampliar "'+proposta.nome+'", que não existe.', 'erro'); return; }
+    const antigo = habilidades[i].gatilho;
+    try { habilidades[i] = validarHab({ nome:habilidades[i].nome, gatilho:proposta.gatilho, acao:habilidades[i].acao }); }
+    catch(e){ log('O gatilho novo não presta: '+e.message, 'erro'); return; }
+    salvarHabs();
+    log('Entendi — isso é "'+proposta.nome+'" dito de outro jeito. Ampliei o gatilho.', 'ele');
+    lembrar('user', frase);
+    lembrar('model', JSON.stringify({tipo:'ampliar', nome:proposta.nome}));
+    if (!rodarHabilidade(frase)){
+      habilidades[i].gatilho = antigo; salvarHabs();   // não pegou: desfaço
+      log('O gatilho novo ainda não pegou sua frase. Voltei o antigo.', 'erro');
+    }
+    return;
+  }
+
+  /* --- saída 2: ele quer aprender um truque novo --- */
+  try { validarHab(proposta); }
+  catch(e){ log('A habilidade veio quebrada: '+e.message, 'erro'); return; }
+
+  lembrar('user', frase);
+  lembrar('model', JSON.stringify({tipo:'habilidade', nome:proposta.nome}));
+
+  const suspeito = PROIBIDO.test(proposta.acao);
+
+  const caixa = document.createElement('div');
+  caixa.className = 'fala novo';
+  const t = document.createElement('b');
+  t.textContent = 'Posso aprender "' + proposta.nome + '"?';
+  const exp = document.createElement('div');
+  exp.textContent = proposta.explicacao || '';
+  const pre = document.createElement('pre');
+  pre.textContent = 'quando: ' + proposta.gatilho + '\n\n' + proposta.acao;
+  caixa.append(t, exp, pre);
+
+  if (suspeito){
+    const av = document.createElement('div');
+    av.style.color = '#A8321F';
+    av.textContent = 'Atenção: esse código usa comandos que eu bloqueio por segurança. Recomendo recusar.';
+    caixa.append(av);
+  }
+
+  const dupla = document.createElement('div');
+  dupla.className = 'dupla';
+  const sim = document.createElement('button');
+  sim.className = 'principal'; sim.textContent = 'Aprender e rodar';
+  const nao = document.createElement('button');
+  nao.className = 'link'; nao.textContent = 'recusar';
+  dupla.append(sim, nao);
+  caixa.append(dupla);
+  $('log').append(caixa);
+  caixa.scrollIntoView({block:'nearest'});
+
+  nao.onclick = () => { caixa.remove(); log('Beleza, esqueci.', 'ele'); };
+  sim.onclick = () => {
+    try { api.aprender(proposta); } catch(e){ log('Deu erro: '+e.message,'erro'); return; }
+    caixa.remove();
+    log('Aprendi: ' + proposta.nome, 'ele');
+    if (!rodarHabilidade(frase)) log('Aprendi, mas o gatilho não pegou a sua frase. Ajuste em Habilidades.', 'erro');
+  };
+}
+
+const dormir = ms => new Promise(r => setTimeout(r, ms));
+
+/* Tenta o modelo escolhido. Se estiver lotado, espera e repete;
+   se continuar lotado, passa pro próximo da fila. */
+async function pedirAoGemini(corpo, aviso){
+  if (!workerUrl && !modelo) await listarModelos(true);
+
+  const fila = workerUrl ? [null] : [modelo].concat(candidatos.filter(n => n !== modelo)).slice(0,3);
+  let ultimoErro = 'não consegui resposta';
+
+  for (let i = 0; i < fila.length; i++){
+    const nome = fila[i];
+    if (i > 0) aviso.textContent = 'O anterior estava lotado. Tentando ' + nome + '…';
+
+    for (let tentativa = 0; tentativa < 3; tentativa++){
+      contar();
+
+      const destino = workerUrl
+        ? workerUrl
+        : 'https://generativelanguage.googleapis.com/v1beta/models/' + nome + ':generateContent';
+      const cabecalhos = { 'Content-Type':'application/json' };
+      if (!workerUrl) cabecalhos['x-goog-api-key'] = chaveGemini;
+
+      const r = await fetch(destino, { method:'POST', headers: cabecalhos, body: JSON.stringify(corpo) });
+      const d = await r.json();
+
+      if (!d.error){
+        const c = d.candidates && d.candidates[0];
+        if (!c) throw new Error('Veio resposta vazia. Motivo: ' + JSON.stringify(d.promptFeedback || d));
+        if (c.finishReason === 'MAX_TOKENS') throw new Error('A resposta foi cortada no meio. Aumente maxOutputTokens.');
+        const texto = ((c.content && c.content.parts) || []).map(p => p.text || '').join('').trim();
+        if (!texto) throw new Error('Veio sem texto. finishReason: ' + c.finishReason);
+        if (!workerUrl && nome !== modelo){        // o substituto funcionou: promovo ele
+          modelo = nome; guardar('jarvis.modelo', nome);
+          $('modelo').value = nome;
+        }
+        return texto;
+      }
+
+      const msg = String(d.error.message || '');
+      ultimoErro = msg;
+
+      const lotado  = r.status === 503 || /high demand|overloaded|unavailable/i.test(msg);
+      const apressado = r.status === 429 && !/day|daily|per day/i.test(msg);
+
+      if (lotado || apressado){
+        if (tentativa < 2){
+          const espera = [3,8][tentativa];
+          aviso.textContent = (lotado ? 'Modelo lotado' : 'Rápido demais') + '. Esperando ' + espera + 's…';
+          await dormir(espera * 1000);
+          continue;
+        }
+        break;                                     // desisto deste modelo, vou pro próximo
+      }
+
+      // erros definitivos: não adianta insistir
+      if (r.status === 429) throw new Error('Estourou a cota do dia. Ela volta à meia-noite no horário do Pacífico.');
+      if (r.status === 404){
+        modelo = ''; guardar('jarvis.modelo', ''); listarModelos(true);
+        throw new Error('Esse modelo não existe mais. Busquei a lista nova — tente de novo.');
+      }
+      if (r.status === 400 && /api key/i.test(msg)) throw new Error('A chave do Gemini está errada ou não foi colada.');
+      throw new Error(msg || ('erro ' + r.status));
+    }
+  }
+
+  throw new Error('Todos os modelos estão ocupados agora. Tente daqui a pouco. (' + ultimoErro.slice(0,80) + ')');
+}
+
+/* ============================================================
+   QUAIS MODELOS ESTA CHAVE TEM
+   Os nomes mudam com o tempo. Em vez de chutar, eu pergunto.
+   ============================================================ */
+function notaModelo(n){
+  if (/embedding|aqa|image|imagen|tts|vision|veo/.test(n)) return 99;   // não servem aqui
+  let nota;
+  if (/pro/.test(n))             nota = 50;   // caro ou fora do grátis
+  else if (/flash-lite/.test(n)) nota = 0;    // mais pedidos por minuto
+  else if (/flash/.test(n))      nota = 2;
+  else                           nota = 10;
+  // preview e experimental vivem lotados: ficam pro fim
+  if (/preview|exp\b|experimental/.test(n)) nota += 20;
+  return nota;
+}
+
+async function listarModelos(silencioso){
+  if (!chaveGemini){
+    if (!silencioso) log('Cole a chave primeiro.', 'erro');
+    return [];
+  }
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models',
+                          { headers:{ 'x-goog-api-key': chaveGemini } });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+
+    const todos = d.models || [];
+
+    const nomes = todos
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map(m => String(m.name).replace(/^models\//, ''))
+      .filter(n => notaModelo(n) < 99)
+      .sort((a,b) => notaModelo(a) - notaModelo(b) || a.localeCompare(b));
+
+    // os modelos de voz atendem por outro método: bidiGenerateContent
+    const vivos = todos
+      .filter(m => (m.supportedGenerationMethods || []).some(x => /bidi/i.test(x)))
+      .map(m => String(m.name).replace(/^models\//, ''))
+      .sort((a,b) => (/(native-audio|dialog)/.test(b) ? 1 : 0) - (/(native-audio|dialog)/.test(a) ? 1 : 0));
+
+    const selL = $('modeloLive');
+    selL.innerHTML = '';
+    if (!vivos.length) selL.innerHTML = '<option value="">sua chave não tem modelo de voz</option>';
+    vivos.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n;
+      o.textContent = n + (/(native-audio|dialog)/.test(n) ? '  ← fala de verdade' : '');
+      selL.append(o);
+    });
+    if (!vivos.includes(modeloLive)) modeloLive = vivos[0] || '';
+    selL.value = modeloLive;
+    guardar('jarvis.modeloLive', modeloLive);
+
+    const sel = $('modelo');
+    sel.innerHTML = '';
+    nomes.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n;
+      o.textContent = n + (notaModelo(n) <= 1 ? '  ← bom pro grátis' : '');
+      sel.append(o);
+    });
+
+    candidatos = nomes;
+    guardar('jarvis.modelos', nomes);
+    if (!nomes.includes(modelo)) modelo = nomes[0] || '';
+    sel.value = modelo;
+    guardar('jarvis.modelo', modelo);
+
+    if (!silencioso) log('Sua chave tem ' + nomes.length + ' modelos de texto e ' + vivos.length + ' de voz. Escolhi ' + modelo + (modeloLive ? ' e ' + modeloLive : '') + '.', 'ele');
+    return nomes;
+  } catch(e){
+    if (!silencioso) log('Não consegui listar os modelos: ' + e.message, 'erro');
+    return [];
+  }
+}
+
+$('buscarm').onclick = () => listarModelos(false);
+$('modelo').onchange = e => {
+  modelo = e.target.value;
+  guardar('jarvis.modelo', modelo);
+  log('Vou usar ' + modelo + '.', 'ele');
+};
+$('modeloLive').onchange = e => {
+  modeloLive = e.target.value;
+  guardar('jarvis.modeloLive', modeloLive);
+  if (live.ws) live.desligar();
+  log('Voz: ' + modeloLive + '.', 'ele');
+};
+
+/* ============================================================
+   COMPROMISSOS
+   ============================================================ */
+function desenharEventos(){
+  const box = $('lista'); box.innerHTML = '';
+  events.forEach((ev,i) => {
+    const row = document.createElement('div'); row.className='ev';
+    const t = document.createElement('input'); t.className='t'; t.value=ev.titulo;
+    t.oninput = e => { events[i].titulo = e.target.value; row.querySelector('.gcal').href = gcalUrl(events[i]); };
+    const q = document.createElement('div'); q.className='quando';
+    const d = document.createElement('input'); d.type='date'; d.value=ev.data;
+    d.oninput = e => { events[i].data = e.target.value; row.querySelector('.gcal').href = gcalUrl(events[i]); };
+    const h1 = document.createElement('input'); h1.type='time'; h1.value=ev.inicio||'';
+    h1.oninput = e => { events[i].inicio = e.target.value||null; row.querySelector('.gcal').href = gcalUrl(events[i]); };
+    const h2 = document.createElement('input'); h2.type='time'; h2.value=ev.fim||'';
+    h2.oninput = e => { events[i].fim = e.target.value||null; row.querySelector('.gcal').href = gcalUrl(events[i]); };
+    q.append(d,h1,document.createTextNode('–'),h2);
+    if (ev.repete){ const r=document.createElement('span'); r.className='rep'; r.textContent='toda semana'; q.append(r); }
+    const x = document.createElement('button'); x.className='x'; x.textContent='×';
+    x.setAttribute('aria-label','Remover '+ev.titulo);
+    x.onclick = () => { events.splice(i,1); desenharEventos(); };
+    const a = document.createElement('a'); a.className='gcal'; a.textContent='Google Agenda';
+    a.target='_blank'; a.rel='noopener'; a.href=gcalUrl(ev);
+    row.append(t,q,x,a); box.append(row);
+  });
+  $('evs').classList.toggle('oculto', !events.length);
+}
+
+function marcas(ev){
+  const dia = ev.data.replace(/-/g,'');
+  if (!ev.inicio){
+    const d = new Date(ev.data+'T12:00:00'); d.setDate(d.getDate()+1);
+    return { allDay:true, start:dia, end:d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate()) };
+  }
+  const s = ev.inicio.replace(':','')+'00';
+  let e;
+  if (ev.fim) e = ev.fim.replace(':','')+'00';
+  else { const [h,mi]=ev.inicio.split(':').map(Number); const d=new Date(2000,0,1,h,mi+60); e=pad(d.getHours())+pad(d.getMinutes())+'00'; }
+  return { allDay:false, start:dia+'T'+s, end:dia+'T'+e };
+}
+function gcalUrl(ev){
+  const t = marcas(ev);
+  const p = new URLSearchParams({action:'TEMPLATE',text:ev.titulo||'Evento',dates:t.start+'/'+t.end,ctz:'America/Sao_Paulo'});
+  let u = 'https://calendar.google.com/calendar/render?'+p;
+  if (ev.repete) u += '&recur='+encodeURIComponent('RRULE:FREQ=WEEKLY;BYDAY='+ev.repete);
+  return u;
+}
+const esc = s => String(s).replace(/[\\;,]/g, m=>'\\'+m).replace(/\n/g,'\\n');
+
+$('baixar').onclick = () => {
+  const now = new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const L = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Jarvis//PT-BR','CALSCALE:GREGORIAN'];
+  events.forEach((ev,i) => {
+    const t = marcas(ev);
+    L.push('BEGIN:VEVENT','UID:'+Date.now()+'-'+i+'@jarvis','DTSTAMP:'+now);
+    L.push(t.allDay?'DTSTART;VALUE=DATE:'+t.start:'DTSTART:'+t.start);
+    L.push(t.allDay?'DTEND;VALUE=DATE:'+t.end:'DTEND:'+t.end);
+    if (ev.repete) L.push('RRULE:FREQ=WEEKLY;BYDAY='+ev.repete+';COUNT=40');
+    L.push('SUMMARY:'+esc(ev.titulo||'Evento'),'END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  const b = new Blob([L.join('\r\n')], {type:'text/calendar;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download='agenda.ics'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+/* ============================================================
+   PAINEL DE HABILIDADES
+   ============================================================ */
+function padrao(){
+  return [
+    { nome:'Fábrica de atalhos',
+      gatilho:'aprenda atalho (\\w+) para (\\S+)',
+      acao:`const nome = m[1], url = m[2];
+api.aprender({ nome:'Atalho: '+nome, gatilho:'^'+nome+'$',
+  acao: "api.abrir('"+url+"');" });
+api.falar('Aprendi o atalho '+nome+'.');` },
+    { nome:'Timer',
+      gatilho:'timer (?:de )?(\\d+) ?min',
+      acao:`const min = +m[1];
+api.falar('Timer de '+min+' minutos ligado.');
+setTimeout(() => api.falar('Acabou o timer de '+min+' minutos.'), min*60000);` }
+  ];
+}
+
+function salvarHabs(){ guardar('jarvis.habilidades', habilidades); 
+/* ============================================================
+   9. MODO VOZ — Live API
+   Canal contínuo por WebSocket. O áudio do microfone sobe em
+   pedaços, a voz dele desce em pedaços, e as transcrições dos
+   dois lados aparecem no registro como texto.
+   ============================================================ */
+/* as vozes que a Live API oferece, com o jeitão de cada uma */
+const VOZES_LIVE = [
+  ['Puck','animada'],          ['Charon','informativa'],   ['Kore','firme'],
+  ['Fenrir','elétrica'],       ['Aoede','leve'],           ['Leda','jovem'],
+  ['Orus','firme'],            ['Zephyr','brilhante'],     ['Autonoe','brilhante'],
+  ['Callirrhoe','tranquila'],  ['Umbriel','tranquila'],    ['Enceladus','sussurrada'],
+  ['Iapetus','clara'],         ['Erinome','clara'],        ['Algieba','suave'],
+  ['Despina','suave'],         ['Algenib','rascante'],     ['Rasalgethi','informativa'],
+  ['Laomedeia','animada'],     ['Achernar','macia'],       ['Alnilam','firme'],
+  ['Schedar','equilibrada'],   ['Gacrux','madura'],        ['Pulcherrima','direta'],
+  ['Achird','amigável'],       ['Zubenelgenubi','casual'], ['Vindemiatrix','gentil'],
+  ['Sadachbia','viva'],        ['Sadaltager','sabida'],    ['Sulafat','calorosa']
+];
+
+let vozLive = buscar('jarvis.vozLive', 'Puck');
+
+(function montarVozes(){
+  const sel = $('vozLive');
+  VOZES_LIVE.forEach(([nome, jeito]) => {
+    const o = document.createElement('option');
+    o.value = nome; o.textContent = nome + ' — ' + jeito;
+    sel.append(o);
+  });
+  sel.value = vozLive;
+  sel.onchange = e => {
+    vozLive = e.target.value;
+    guardar('jarvis.vozLive', vozLive);
+    log('Voz trocada para ' + vozLive + '. Reconectando…', 'ele');
+    if (live.querLigado){ live.desligar(); setTimeout(() => trocarParaVoz(true), 400); }
+  };
+})();
+
+const live = {
+  ws:null, ligando:false, querLigado:false,
+  ctxIn:null, ctxOut:null, fonte:null, processador:null, stream:null,
+  proximo:0, linhaMinha:null, linhaDele:null, tentativas:0,
+
+  estado(texto, classe){
+    $('estadoLive').textContent = texto;
+    $('bolha').className = 'bolha' + (classe ? ' ' + classe : '');
+  },
+
+  async ligar(){
+    if (this.ws || this.ligando) return;
+    if (!chaveGemini) return log('Cole a chave do Gemini primeiro.', 'erro');
+    if (!modeloLive)  { await listarModelos(true); }
+    if (!modeloLive)  return log('Sua chave não tem modelo de voz. Clique em "buscar os modelos".', 'erro');
+
+    this.querLigado = true;
+    this.ligando = true;
+    this.estado('conectando…');
+
+    const url = 'wss://generativelanguage.googleapis.com/ws/'
+              + 'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+              + '?key=' + encodeURIComponent(chaveGemini);
+
+    let ws;
+    try { ws = new WebSocket(url); } catch(e){ this.ligando=false; return log('Não conectou: '+e.message,'erro'); }
+    this.ws = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ setup:{
+        model: 'models/' + modeloLive,
+        generationConfig:{
+          responseModalities:['AUDIO'],
+          speechConfig: (function(){
+            const cfg = { voiceConfig:{ prebuiltVoiceConfig:{ voiceName: vozLive } } };
+            // modelos native-audio escolhem o idioma sozinhos e recusam languageCode
+            if (!/native-audio|dialog/i.test(modeloLive)) cfg.languageCode = 'pt-BR';
+            return cfg;
+          })()
+        },
+        systemInstruction:{ parts:[{ text:
+          'Você é o Jarvis, assistente do Daniel. Fale português do Brasil, em frases curtas e naturais. '
+          + 'Ele já tem estes truques salvos, que o programa executa sozinho: '
+          + (habilidades.map(h=>h.nome).join(', ') || 'nenhum') + '. '
+          + 'Se ele pedir uma capacidade nova pra guardar, diga que pra isso ele deve trocar pro modo texto. '
+          + 'Responda sempre em português do Brasil, mesmo que ele misture outras línguas.' }] },
+        inputAudioTranscription:{},
+        outputAudioTranscription:{}
+      }}));
+    };
+
+    ws.onmessage = async ev => {
+      let dado = ev.data;
+      if (dado instanceof Blob) dado = await dado.text();
+      let m; try { m = JSON.parse(dado); } catch(_){ return; }
+
+      if (m.setupComplete){
+        this.ligando = false; this.tentativas = 0;
+        this.estado('no ar — pode falar', 'no-ar');
+        await this.abrirMicrofone();
+        return;
+      }
+
+      const sc = m.serverContent;
+      if (sc){
+        if (sc.inputTranscription && sc.inputTranscription.text)
+          this.escrever('minha', sc.inputTranscription.text);
+
+        if (sc.outputTranscription && sc.outputTranscription.text)
+          this.escrever('dele', sc.outputTranscription.text);
+
+        const partes = (sc.modelTurn && sc.modelTurn.parts) || [];
+        for (const p of partes)
+          if (p.inlineData && p.inlineData.data) this.tocar(p.inlineData.data);
+
+        if (sc.interrupted){ this.pararAudio(); }
+
+        if (sc.turnComplete){
+          // o que ele disse virou texto: se bater com uma habilidade, executo aqui
+          const dito = this.linhaMinha ? this.linhaMinha.textContent : '';
+          this.linhaMinha = null; this.linhaDele = null;
+          if (dito.trim()) rodarHabilidade(dito.trim());
+          this.estado('no ar — pode falar', 'no-ar');
+        }
+      }
+
+      if (m.goAway) log('O servidor avisou que vai encerrar a conexão.', 'erro');
+      if (m.error)  log('Erro na voz: ' + JSON.stringify(m.error).slice(0,200), 'erro');
+    };
+
+    ws.onerror = () => { this.estado('erro de conexão'); };
+
+    ws.onclose = ev => {
+      this.ligando = false;
+      this.fecharMicrofone();
+      this.ws = null;
+      if (!this.querLigado){ this.estado('desligado'); return; }
+      // estourar o limite por minuto derruba a conexão: volto sozinho
+      this.tentativas++;
+      const espera = Math.min(2 + this.tentativas * 3, 20);
+      this.estado('caiu (' + (ev.code||'?') + '), voltando em ' + espera + 's…');
+      setTimeout(() => { if (this.querLigado) this.ligar(); }, espera * 1000);
+    };
+  },
+
+  alternarMicrofone(){
+    if (this.stream){
+      this.fecharMicrofone();
+      $('mic').classList.remove('on');
+      $('mic').lastChild.textContent = 'Falar';
+      this.estado('mudo — ele não está te ouvindo');
+    } else {
+      if (!this.ws || this.ws.readyState !== 1) return log('O canal de voz ainda não está no ar.', 'erro');
+      this.abrirMicrofone();
+    }
+  },
+
+  desligar(){
+    this.querLigado = false;
+    this.fecharMicrofone();
+    this.pararAudio();
+    if (this.ws){ try { this.ws.close(); } catch(_){} this.ws = null; }
+    this.estado('desligado');
+  },
+
+  /* uma linha só por fala, que vai crescendo conforme chega */
+  escrever(quem, pedaco){
+    const campo = quem === 'minha' ? 'linhaMinha' : 'linhaDele';
+    if (!this[campo]){
+      this[campo] = log('', quem === 'minha' ? 'voce' : 'ele');
+    }
+    this[campo].textContent += pedaco;
+  },
+
+  /* ---------- microfone: 16 kHz, 16 bits ---------- */
+  async abrirMicrofone(){
+    if (this.stream) return;
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio:{
+        channelCount:1, echoCancellation:true, noiseSuppression:true
+      }});
+    } catch(e){ return log('Sem microfone: ' + e.message, 'erro'); }
+
+    this.ctxIn = new (window.AudioContext || window.webkitAudioContext)({ sampleRate:16000 });
+    this.fonte = this.ctxIn.createMediaStreamSource(this.stream);
+    this.processador = this.ctxIn.createScriptProcessor(4096, 1, 1);
+
+    this.processador.onaudioprocess = e => {
+      if (!this.ws || this.ws.readyState !== 1) return;
+      const f32 = e.inputBuffer.getChannelData(0);
+      const i16 = new Int16Array(f32.length);
+      for (let i = 0; i < f32.length; i++){
+        const v = Math.max(-1, Math.min(1, f32[i]));
+        i16[i] = v < 0 ? v * 0x8000 : v * 0x7FFF;
+      }
+      this.ws.send(JSON.stringify({ realtimeInput:{ audio:{
+        mimeType:'audio/pcm;rate=16000', data: base64(i16.buffer)
+      }}}));
+    };
+
+    this.fonte.connect(this.processador);
+    this.processador.connect(this.ctxIn.destination);
+
+    $('mic').classList.add('on');
+    $('mic').lastChild.textContent = 'Ouvindo — toque pra mutar';
+    this.estado('no ar — pode falar', 'no-ar');
+  },
+
+  fecharMicrofone(){
+    if (modoVoz){ $('mic').classList.remove('on'); $('mic').lastChild.textContent = 'Falar'; }
+    try { this.processador && this.processador.disconnect(); } catch(_){}
+    try { this.fonte && this.fonte.disconnect(); } catch(_){}
+    try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch(_){}
+    try { this.ctxIn && this.ctxIn.close(); } catch(_){}
+    this.processador = this.fonte = this.stream = this.ctxIn = null;
+  },
+
+  /* ---------- voz dele: 24 kHz, enfileirada ---------- */
+  tocar(b64){
+    if (!this.ctxOut) this.ctxOut = new (window.AudioContext || window.webkitAudioContext)({ sampleRate:24000 });
+    const ctx = this.ctxOut;
+    const bytes = deBase64(b64);
+    const i16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
+    const buf = ctx.createBuffer(1, i16.length, 24000);
+    const canal = buf.getChannelData(0);
+    for (let i = 0; i < i16.length; i++) canal[i] = i16[i] / 32768;
+
+    const no = ctx.createBufferSource();
+    no.buffer = buf; no.connect(ctx.destination);
+    const agora = ctx.currentTime;
+    if (this.proximo < agora) this.proximo = agora + 0.03;
+    no.start(this.proximo);
+    this.proximo += buf.duration;
+    this.estado('falando…', 'falando');
+  },
+
+  pararAudio(){
+    if (this.ctxOut){ try { this.ctxOut.close(); } catch(_){} this.ctxOut = null; }
+    this.proximo = 0;
+  },
+
+  /* texto digitado também vale no modo voz */
+  mandarTexto(texto){
+    if (!this.ws || this.ws.readyState !== 1) return false;
+    this.ws.send(JSON.stringify({ clientContent:{
+      turns:[{ role:'user', parts:[{ text: texto }] }], turnComplete:true
+    }}));
+    return true;
+  }
+};
+
+function base64(buffer){
+  const b = new Uint8Array(buffer);
+  let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function deBase64(b64){
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/* ---------- trocar de modo ---------- */
+let modoVoz = false;
+function trocarParaVoz(v){
+  modoVoz = v;
+  $('mTexto').classList.toggle('ativo', !v);
+  $('mVoz').classList.toggle('ativo', v);
+  $('aovivo').classList.toggle('oculto', !v);
+  $('explicaVoz').classList.toggle('oculto', !v);
+  if (!v){ $('mic').classList.remove('on'); $('mic').lastChild.textContent = 'Falar'; }
+  $('cmd').placeholder = v ? 'Fale. Ou digite, se preferir.' : 'Fala aí. Ou escreve.';
+  if (v) live.ligar(); else live.desligar();
+}
+$('mTexto').onclick = () => trocarParaVoz(false);
+$('mVoz').onclick   = () => trocarParaVoz(true);
+
+desenharHabs();
+mostrarGasto();
+
+if (location.protocol === 'file:'){
+  const arquivo = location.pathname.split('/').pop();
+  log('Aviso: você abriu direto do arquivo. Assim o navegador bloqueia a conversa com o Gemini. '
+    + 'Abra o Prompt de Comando nesta pasta, rode "python -m http.server 8000" e entre em '
+    + 'http://localhost:8000/' + arquivo + ' — tudo o mais funciona normalmente por aqui.', 'erro');
+} }
+
+function desenharHabs(){
+  const box = $('habs'); box.innerHTML = '';
+  habilidades.forEach((h,i) => {
+    const row = document.createElement('div'); row.className='hab';
+    const b = document.createElement('b'); b.textContent = h.nome;
+    const c = document.createElement('code'); c.textContent = h.gatilho;
+    const ed = document.createElement('button'); ed.className='link'; ed.textContent='editar';
+    ed.onclick = () => abrirEditor(i);
+    const rm = document.createElement('button'); rm.className='link perigo'; rm.textContent='apagar';
+    rm.onclick = () => { habilidades.splice(i,1); salvarHabs(); };
+    row.append(b,c,ed,rm); box.append(row);
+  });
+  $('sabe').textContent = habilidades.length + (habilidades.length===1 ? ' habilidade' : ' habilidades');
+}
+
+/* ---- ensinar pela frase ---- */
+function fraseParaGatilho(frase){
+  const espacos = [];
+  const e = normalize(frase).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const g = e.replace(/\\\{([\w\/ -]+)\\\}/g, (_, dentro) => {
+    if (dentro.includes('/'))                       // {entra/entre/abre} = qualquer um deles
+      return '(?:' + dentro.split('/').map(x => x.trim()).filter(Boolean).join('|') + ')';
+    espacos.push(dentro.trim());                    // {site} = guarda o que vier aqui
+    return '(.+?)';
+  });
+  return { gatilho:'^\\s*'+g+'\\s*$', espacos };
+}
+function textoParaJS(modelo, espacos){
+  const partes=[]; const re=/\{(\w+)\}/g; let u=0,m;
+  while ((m = re.exec(modelo))){
+    partes.push(JSON.stringify(modelo.slice(u,m.index)));
+    const i = espacos.indexOf(m[1]);
+    partes.push(i>=0 ? 'm['+(i+1)+']' : '""');
+    u = m.index + m[0].length;
+  }
+  partes.push(JSON.stringify(modelo.slice(u)));
+  const l = partes.filter(p => p !== '""');
+  return l.length ? l.join(' + ') : '""';
+}
+function montarDoFacil(){
+  const frase = $('sfrase').value.trim();
+  if (!frase) return { erro:'Escreva a frase que você vai dizer.' };
+  const { gatilho, espacos } = fraseParaGatilho(frase);
+  const alvo = textoParaJS($('salvo').value, espacos);
+  const t = $('sacao').value;
+  let acao;
+  if (t==='falar')   acao = 'api.falar('+alvo+');';
+  if (t==='mostrar') acao = 'api.mostrar('+alvo+');';
+  if (t==='abrir')   acao = 'api.abrir('+alvo+');';
+  if (t==='timer'){
+    const min = textoParaJS($('smin').value, espacos);
+    acao = 'const min = Number('+min+') || 1;\napi.mostrar("Combinado, daqui a "+min+" min.");\nsetTimeout(() => api.falar('+alvo+'), min*60000);';
+  }
+  return { gatilho, acao };
+}
+
+const ROTULOS = {falar:'Falando isto',mostrar:'Escrevendo isto',abrir:'Abrindo este endereço',timer:'Me avisando assim'};
+$('sacao').onchange = () => {
+  const t = $('sacao').value;
+  $('lalvo').textContent = ROTULOS[t];
+  $('salvo').placeholder = t==='abrir' ? 'https://...' : 'texto...';
+  $('lmin').classList.toggle('oculto', t!=='timer');
+  $('smin').classList.toggle('oculto', t!=='timer');
+};
+
+let editando = -1, modoCru = false;
+function trocarModo(cru){
+  modoCru = cru;
+  $('facil').classList.toggle('oculto', cru);
+  $('cru').classList.toggle('oculto', !cru);
+  $('hmodo').textContent = cru ? 'voltar pro modo fácil' : 'ver o código';
+}
+function abrirEditor(i){
+  editando = i;
+  const h = i<0 ? {nome:'',gatilho:'',acao:''} : habilidades[i];
+  $('hnome').value = h.nome; $('hgat').value = h.gatilho; $('hcod').value = h.acao;
+  if (i<0){ $('sfrase').value=''; $('salvo').value=''; $('smin').value=''; }
+  trocarModo(i >= 0);
+  $('editor').classList.remove('oculto');
+  $('phab').open = true;
+  $('hnome').focus();
+}
+$('nova').onclick = () => abrirEditor(-1);
+$('hx').onclick = () => $('editor').classList.add('oculto');
+$('hmodo').onclick = () => {
+  if (!modoCru){
+    const f = montarDoFacil();
+    if (!f.erro){ $('hgat').value = f.gatilho; $('hcod').value = f.acao; }
+  }
+  trocarModo(!modoCru);
+};
+$('hok').onclick = () => {
+  const nome = $('hnome').value.trim();
+  if (!nome) return log('Dê um nome pra habilidade.','erro');
+  let gat, cod;
+  if (modoCru){ gat = $('hgat').value.trim(); cod = $('hcod').value; }
+  else {
+    const f = montarDoFacil();
+    if (f.erro) return log(f.erro,'erro');
+    gat = f.gatilho; cod = f.acao;
+  }
+  try {
+    const limpa = validarHab({nome, gatilho:gat, acao:cod});
+    editando < 0 ? habilidades.push(limpa) : habilidades[editando] = limpa;
+    salvarHabs();
+  } catch(e){ return log(e.message,'erro'); }
+  $('editor').classList.add('oculto');
+  api.falar('Aprendi ' + nome + '.');
+};
+
+/* ---- levar pra outro aparelho ---- */
+$('exp').onclick = () => {
+  const b = new Blob([JSON.stringify(habilidades,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download='habilidades.json'; a.click();
+  URL.revokeObjectURL(a.href);
+};
+$('imp').onclick = () => $('impf').click();
+$('impf').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const lista = JSON.parse(r.result);
+      if (!Array.isArray(lista)) throw new Error('não é uma lista');
+      habilidades = lista.map(validarHab);
+      salvarHabs();
+      log('Importei '+habilidades.length+' habilidades.','ele');
+    } catch(err){ log('Arquivo inválido: '+err.message,'erro'); }
+  };
+  r.readAsText(f);
+};
+
+/* ---- worker ---- */
+$('worker').value = workerUrl;
+$('chave').value  = chaveGemini;
+if (modelo){
+  const o = document.createElement('option');
+  o.value = modelo; o.textContent = modelo;
+  $('modelo').innerHTML = ''; $('modelo').append(o);
+}
+$('wsalvar').onclick = () => {
+  workerUrl   = $('worker').value.trim();
+  chaveGemini = $('chave').value.trim();
+  guardar('jarvis.worker', workerUrl);
+  guardar('jarvis.chave', chaveGemini);
+  log(workerUrl ? 'Salvo. Vou aprender pelo Worker.'
+     : chaveGemini ? 'Salvo. Vou aprender com a chave daqui mesmo.'
+     : 'Sem Worker e sem chave: não consigo aprender sozinho.', 'ele');
+  if (chaveGemini && !workerUrl) listarModelos(false);
+};
+
+
+/* ============================================================
+   9. MODO VOZ — Live API
+   Canal contínuo por WebSocket. O áudio do microfone sobe em
+   pedaços, a voz dele desce em pedaços, e as transcrições dos
+   dois lados aparecem no registro como texto.
+   ============================================================ */
+/* as vozes que a Live API oferece, com o jeitão de cada uma */
+const VOZES_LIVE = [
+  ['Puck','animada'],          ['Charon','informativa'],   ['Kore','firme'],
+  ['Fenrir','elétrica'],       ['Aoede','leve'],           ['Leda','jovem'],
+  ['Orus','firme'],            ['Zephyr','brilhante'],     ['Autonoe','brilhante'],
+  ['Callirrhoe','tranquila'],  ['Umbriel','tranquila'],    ['Enceladus','sussurrada'],
+  ['Iapetus','clara'],         ['Erinome','clara'],        ['Algieba','suave'],
+  ['Despina','suave'],         ['Algenib','rascante'],     ['Rasalgethi','informativa'],
+  ['Laomedeia','animada'],     ['Achernar','macia'],       ['Alnilam','firme'],
+  ['Schedar','equilibrada'],   ['Gacrux','madura'],        ['Pulcherrima','direta'],
+  ['Achird','amigável'],       ['Zubenelgenubi','casual'], ['Vindemiatrix','gentil'],
+  ['Sadachbia','viva'],        ['Sadaltager','sabida'],    ['Sulafat','calorosa']
+];
+
+let vozLive = buscar('jarvis.vozLive', 'Puck');
+
+(function montarVozes(){
+  const sel = $('vozLive');
+  VOZES_LIVE.forEach(([nome, jeito]) => {
+    const o = document.createElement('option');
+    o.value = nome; o.textContent = nome + ' — ' + jeito;
+    sel.append(o);
+  });
+  sel.value = vozLive;
+  sel.onchange = e => {
+    vozLive = e.target.value;
+    guardar('jarvis.vozLive', vozLive);
+    log('Voz trocada para ' + vozLive + '. Reconectando…', 'ele');
+    if (live.querLigado){ live.desligar(); setTimeout(() => trocarParaVoz(true), 400); }
+  };
+})();
+
+const live = {
+  ws:null, ligando:false, querLigado:false,
+  ctxIn:null, ctxOut:null, fonte:null, processador:null, stream:null,
+  proximo:0, linhaMinha:null, linhaDele:null, tentativas:0,
+
+  estado(texto, classe){
+    $('estadoLive').textContent = texto;
+    $('bolha').className = 'bolha' + (classe ? ' ' + classe : '');
+  },
+
+  async ligar(){
+    if (this.ws || this.ligando) return;
+    if (!chaveGemini) return log('Cole a chave do Gemini primeiro.', 'erro');
+    if (!modeloLive)  { await listarModelos(true); }
+    if (!modeloLive)  return log('Sua chave não tem modelo de voz. Clique em "buscar os modelos".', 'erro');
+
+    this.querLigado = true;
+    this.ligando = true;
+    this.estado('conectando…');
+
+    const url = 'wss://generativelanguage.googleapis.com/ws/'
+              + 'google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+              + '?key=' + encodeURIComponent(chaveGemini);
+
+    let ws;
+    try { ws = new WebSocket(url); } catch(e){ this.ligando=false; return log('Não conectou: '+e.message,'erro'); }
+    this.ws = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ setup:{
+        model: 'models/' + modeloLive,
+        generationConfig:{
+          responseModalities:['AUDIO'],
+          speechConfig: (function(){
+            const cfg = { voiceConfig:{ prebuiltVoiceConfig:{ voiceName: vozLive } } };
+            // modelos native-audio escolhem o idioma sozinhos e recusam languageCode
+            if (!/native-audio|dialog/i.test(modeloLive)) cfg.languageCode = 'pt-BR';
+            return cfg;
+          })()
+        },
+        systemInstruction:{ parts:[{ text:
+          'Você é o Jarvis, assistente do Daniel. Fale português do Brasil, em frases curtas e naturais. '
+          + 'Ele já tem estes truques salvos, que o programa executa sozinho: '
+          + (habilidades.map(h=>h.nome).join(', ') || 'nenhum') + '. '
+          + 'Se ele pedir uma capacidade nova pra guardar, diga que pra isso ele deve trocar pro modo texto. '
+          + 'Responda sempre em português do Brasil, mesmo que ele misture outras línguas.' }] },
+        inputAudioTranscription:{},
+        outputAudioTranscription:{}
+      }}));
+    };
+
+    ws.onmessage = async ev => {
+      let dado = ev.data;
+      if (dado instanceof Blob) dado = await dado.text();
+      let m; try { m = JSON.parse(dado); } catch(_){ return; }
+
+      if (m.setupComplete){
+        this.ligando = false; this.tentativas = 0;
+        this.estado('no ar — pode falar', 'no-ar');
+        await this.abrirMicrofone();
+        return;
+      }
+
+      const sc = m.serverContent;
+      if (sc){
+        if (sc.inputTranscription && sc.inputTranscription.text)
+          this.escrever('minha', sc.inputTranscription.text);
+
+        if (sc.outputTranscription && sc.outputTranscription.text)
+          this.escrever('dele', sc.outputTranscription.text);
+
+        const partes = (sc.modelTurn && sc.modelTurn.parts) || [];
+        for (const p of partes)
+          if (p.inlineData && p.inlineData.data) this.tocar(p.inlineData.data);
+
+        if (sc.interrupted){ this.pararAudio(); }
+
+        if (sc.turnComplete){
+          // o que ele disse virou texto: se bater com uma habilidade, executo aqui
+          const dito = this.linhaMinha ? this.linhaMinha.textContent : '';
+          this.linhaMinha = null; this.linhaDele = null;
+          if (dito.trim()) rodarHabilidade(dito.trim());
+          this.estado('no ar — pode falar', 'no-ar');
+        }
+      }
+
+      if (m.goAway) log('O servidor avisou que vai encerrar a conexão.', 'erro');
+      if (m.error)  log('Erro na voz: ' + JSON.stringify(m.error).slice(0,200), 'erro');
+    };
+
+    ws.onerror = () => { this.estado('erro de conexão'); };
+
+    ws.onclose = ev => {
+      this.ligando = false;
+      this.fecharMicrofone();
+      this.ws = null;
+      if (!this.querLigado){ this.estado('desligado'); return; }
+      // estourar o limite por minuto derruba a conexão: volto sozinho
+      this.tentativas++;
+      const espera = Math.min(2 + this.tentativas * 3, 20);
+      this.estado('caiu (' + (ev.code||'?') + '), voltando em ' + espera + 's…');
+      setTimeout(() => { if (this.querLigado) this.ligar(); }, espera * 1000);
+    };
+  },
+
+  alternarMicrofone(){
+    if (this.stream){
+      this.fecharMicrofone();
+      $('mic').classList.remove('on');
+      $('mic').lastChild.textContent = 'Falar';
+      this.estado('mudo — ele não está te ouvindo');
+    } else {
+      if (!this.ws || this.ws.readyState !== 1) return log('O canal de voz ainda não está no ar.', 'erro');
+      this.abrirMicrofone();
+    }
+  },
+
+  desligar(){
+    this.querLigado = false;
+    this.fecharMicrofone();
+    this.pararAudio();
+    if (this.ws){ try { this.ws.close(); } catch(_){} this.ws = null; }
+    this.estado('desligado');
+  },
+
+  /* uma linha só por fala, que vai crescendo conforme chega */
+  escrever(quem, pedaco){
+    const campo = quem === 'minha' ? 'linhaMinha' : 'linhaDele';
+    if (!this[campo]){
+      this[campo] = log('', quem === 'minha' ? 'voce' : 'ele');
+    }
+    this[campo].textContent += pedaco;
+  },
+
+  /* ---------- microfone: 16 kHz, 16 bits ---------- */
+  async abrirMicrofone(){
+    if (this.stream) return;
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio:{
+        channelCount:1, echoCancellation:true, noiseSuppression:true
+      }});
+    } catch(e){ return log('Sem microfone: ' + e.message, 'erro'); }
+
+    this.ctxIn = new (window.AudioContext || window.webkitAudioContext)({ sampleRate:16000 });
+    this.fonte = this.ctxIn.createMediaStreamSource(this.stream);
+    this.processador = this.ctxIn.createScriptProcessor(4096, 1, 1);
+
+    this.processador.onaudioprocess = e => {
+      if (!this.ws || this.ws.readyState !== 1) return;
+      const f32 = e.inputBuffer.getChannelData(0);
+      const i16 = new Int16Array(f32.length);
+      for (let i = 0; i < f32.length; i++){
+        const v = Math.max(-1, Math.min(1, f32[i]));
+        i16[i] = v < 0 ? v * 0x8000 : v * 0x7FFF;
+      }
+      this.ws.send(JSON.stringify({ realtimeInput:{ audio:{
+        mimeType:'audio/pcm;rate=16000', data: base64(i16.buffer)
+      }}}));
+    };
+
+    this.fonte.connect(this.processador);
+    this.processador.connect(this.ctxIn.destination);
+
+    $('mic').classList.add('on');
+    $('mic').lastChild.textContent = 'Ouvindo — toque pra mutar';
+    this.estado('no ar — pode falar', 'no-ar');
+  },
+
+  fecharMicrofone(){
+    if (modoVoz){ $('mic').classList.remove('on'); $('mic').lastChild.textContent = 'Falar'; }
+    try { this.processador && this.processador.disconnect(); } catch(_){}
+    try { this.fonte && this.fonte.disconnect(); } catch(_){}
+    try { this.stream && this.stream.getTracks().forEach(t => t.stop()); } catch(_){}
+    try { this.ctxIn && this.ctxIn.close(); } catch(_){}
+    this.processador = this.fonte = this.stream = this.ctxIn = null;
+  },
+
+  /* ---------- voz dele: 24 kHz, enfileirada ---------- */
+  tocar(b64){
+    if (!this.ctxOut) this.ctxOut = new (window.AudioContext || window.webkitAudioContext)({ sampleRate:24000 });
+    const ctx = this.ctxOut;
+    const bytes = deBase64(b64);
+    const i16 = new Int16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
+    const buf = ctx.createBuffer(1, i16.length, 24000);
+    const canal = buf.getChannelData(0);
+    for (let i = 0; i < i16.length; i++) canal[i] = i16[i] / 32768;
+
+    const no = ctx.createBufferSource();
+    no.buffer = buf; no.connect(ctx.destination);
+    const agora = ctx.currentTime;
+    if (this.proximo < agora) this.proximo = agora + 0.03;
+    no.start(this.proximo);
+    this.proximo += buf.duration;
+    this.estado('falando…', 'falando');
+  },
+
+  pararAudio(){
+    if (this.ctxOut){ try { this.ctxOut.close(); } catch(_){} this.ctxOut = null; }
+    this.proximo = 0;
+  },
+
+  /* texto digitado também vale no modo voz */
+  mandarTexto(texto){
+    if (!this.ws || this.ws.readyState !== 1) return false;
+    this.ws.send(JSON.stringify({ clientContent:{
+      turns:[{ role:'user', parts:[{ text: texto }] }], turnComplete:true
+    }}));
+    return true;
+  }
+};
+
+function base64(buffer){
+  const b = new Uint8Array(buffer);
+  let s = '';
+  for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function deBase64(b64){
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/* ---------- trocar de modo ---------- */
+let modoVoz = false;
+function trocarParaVoz(v){
+  modoVoz = v;
+  $('mTexto').classList.toggle('ativo', !v);
+  $('mVoz').classList.toggle('ativo', v);
+  $('aovivo').classList.toggle('oculto', !v);
+  $('explicaVoz').classList.toggle('oculto', !v);
+  if (!v){ $('mic').classList.remove('on'); $('mic').lastChild.textContent = 'Falar'; }
+  $('cmd').placeholder = v ? 'Fale. Ou digite, se preferir.' : 'Fala aí. Ou escreve.';
+  if (v) live.ligar(); else live.desligar();
+}
+$('mTexto').onclick = () => trocarParaVoz(false);
+$('mVoz').onclick   = () => trocarParaVoz(true);
+
+desenharHabs();
+mostrarGasto();
+
+if (location.protocol === 'file:'){
+  const arquivo = location.pathname.split('/').pop();
+  log('Aviso: você abriu direto do arquivo. Assim o navegador bloqueia a conversa com o Gemini. '
+    + 'Abra o Prompt de Comando nesta pasta, rode "python -m http.server 8000" e entre em '
+    + 'http://localhost:8000/' + arquivo + ' — tudo o mais funciona normalmente por aqui.', 'erro');
+}
+</script>
