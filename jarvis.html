@@ -1,5 +1,10 @@
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E8E6E1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jarvis">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Jarvis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -82,7 +87,15 @@ button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-vis
 .bolha{width:9px;height:9px;border-radius:50%;background:var(--linha);flex:none}
 .bolha.no-ar{background:#2E7D4F}
 .bolha.falando{background:var(--sinal);animation:bate .7s ease-in-out infinite}
-.log{margin-top:26px;display:flex;flex-direction:column;gap:2px}
+.cabecaLog{display:flex;justify-content:space-between;align-items:baseline;margin-top:26px}
+.cabecaLog span{font-size:14px;color:var(--fumaca)}
+.log{
+  margin-top:6px;display:flex;flex-direction:column;gap:2px;
+  max-height:46vh;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;
+}
+.log::-webkit-scrollbar{width:6px}
+.log::-webkit-scrollbar-thumb{background:var(--linha);border-radius:3px}
 .fala{padding:9px 0;border-bottom:1px solid var(--linha);font-size:16px}
 .fala.voce{color:var(--fumaca)}
 .fala.ele{color:var(--grafite);padding-left:14px;border-left:3px solid var(--aco);padding-top:7px;padding-bottom:7px}
@@ -168,6 +181,10 @@ textarea.cod{min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;
     novas aqui; pra isso volte pro modo texto.
   </p>
 
+  <div class="cabecaLog oculto" id="cabecaLog">
+    <span id="contaLog"></span>
+    <button class="link" id="limpar">limpar conversa</button>
+  </div>
   <div class="log" id="log"></div>
 
   <section class="evs oculto" id="evs">
@@ -180,8 +197,17 @@ textarea.cod{min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;
     <div id="habs"></div>
     <p><button class="link" id="nova">ensinar uma</button> ·
        <button class="link" id="exp">exportar</button> ·
-       <button class="link" id="imp">importar</button>
+       <button class="link" id="imp">importar</button> ·
+       <button class="link" id="copiar">copiar</button> ·
+       <button class="link" id="colar">colar</button>
        <input type="file" id="impf" accept="application/json" class="oculto"></p>
+
+    <div class="sec oculto" id="caixaColar">
+      <label for="textoColar">Cole aqui o que você copiou do outro aparelho</label>
+      <textarea id="textoColar" class="cod" spellcheck="false" placeholder="[ { &quot;nome&quot;: ... } ]"></textarea>
+      <p><button class="principal" id="colarOk">Importar</button>
+         <button class="link" id="colarX" style="margin-left:12px">cancelar</button></p>
+    </div>
 
     <div class="sec oculto" id="editor">
       <label for="hnome">Nome</label>
@@ -435,14 +461,28 @@ function pararMic(){
 /* ============================================================
    REGISTRO NA TELA
    ============================================================ */
+const LIMITE_LOG = 60;   // acima disso as mais antigas somem da tela
+
 function log(texto, classe){
+  const caixa = $('log');
   const d = document.createElement('div');
   d.className = 'fala ' + (classe || 'ele');
   d.textContent = texto;
-  $('log').append(d);
-  d.scrollIntoView({ block:'nearest' });
+  caixa.append(d);
+
+  while (caixa.children.length > LIMITE_LOG) caixa.firstElementChild.remove();
+
+  caixa.scrollTop = caixa.scrollHeight;   // rola a janela, não a página
+  $('cabecaLog').classList.remove('oculto');
+  $('contaLog').textContent = caixa.children.length + (caixa.children.length === 1 ? ' fala' : ' falas');
   return d;
 }
+
+$('limpar').onclick = () => {
+  $('log').innerHTML = '';
+  historico = [];
+  $('cabecaLog').classList.add('oculto');
+};
 
 /* ============================================================
    O QUE UMA HABILIDADE PODE FAZER
@@ -696,7 +736,7 @@ Hoje é ${iso(new Date())}.`;
   dupla.append(sim, nao);
   caixa.append(dupla);
   $('log').append(caixa);
-  caixa.scrollIntoView({block:'nearest'});
+  $('log').scrollTop = $('log').scrollHeight;
 
   nao.onclick = () => { caixa.remove(); log('Beleza, esqueci.', 'ele'); };
   sim.onclick = () => {
@@ -1070,9 +1110,15 @@ const live = {
 
         if (sc.turnComplete){
           // o que ele disse virou texto: se bater com uma habilidade, executo aqui
-          const dito = this.linhaMinha ? this.linhaMinha.textContent : '';
+          const dito = (this.linhaMinha ? this.linhaMinha.textContent : '').trim();
           this.linhaMinha = null; this.linhaDele = null;
-          if (dito.trim()) rodarHabilidade(dito.trim());
+          if (dito){
+            // mesma escada do modo texto: habilidade primeiro, data depois
+            if (!rodarHabilidade(dito)){
+              const ev = parseData(dito, new Date());
+              if (ev) api.agendar(ev);
+            }
+          }
           this.estado('no ar — pode falar', 'no-ar');
         }
       }
@@ -1357,6 +1403,32 @@ $('exp').onclick = () => {
   a.href = URL.createObjectURL(b); a.download='habilidades.json'; a.click();
   URL.revokeObjectURL(a.href);
 };
+/* copiar e colar: o jeito prático de levar pro celular */
+$('copiar').onclick = async () => {
+  const texto = JSON.stringify(habilidades);
+  try {
+    await navigator.clipboard.writeText(texto);
+    log('Copiei as ' + habilidades.length + ' habilidades. Cole no outro aparelho.', 'ele');
+  } catch(_){
+    $('textoColar').value = texto;
+    $('caixaColar').classList.remove('oculto');
+    $('textoColar').select();
+    log('Não consegui usar a área de transferência. Copie o texto da caixa na mão.', 'erro');
+  }
+};
+$('colar').onclick   = () => { $('textoColar').value=''; $('caixaColar').classList.remove('oculto'); $('textoColar').focus(); };
+$('colarX').onclick  = () => $('caixaColar').classList.add('oculto');
+$('colarOk').onclick = () => {
+  try {
+    const lista = JSON.parse($('textoColar').value);
+    if (!Array.isArray(lista)) throw new Error('não é uma lista');
+    habilidades = lista.map(validarHab);
+    salvarHabs();
+    $('caixaColar').classList.add('oculto');
+    log('Importei ' + habilidades.length + ' habilidades.', 'ele');
+  } catch(e){ log('Não deu pra ler: ' + e.message, 'erro'); }
+};
+
 $('imp').onclick = () => $('impf').click();
 $('impf').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
@@ -1510,9 +1582,15 @@ const live = {
 
         if (sc.turnComplete){
           // o que ele disse virou texto: se bater com uma habilidade, executo aqui
-          const dito = this.linhaMinha ? this.linhaMinha.textContent : '';
+          const dito = (this.linhaMinha ? this.linhaMinha.textContent : '').trim();
           this.linhaMinha = null; this.linhaDele = null;
-          if (dito.trim()) rodarHabilidade(dito.trim());
+          if (dito){
+            // mesma escada do modo texto: habilidade primeiro, data depois
+            if (!rodarHabilidade(dito)){
+              const ev = parseData(dito, new Date());
+              if (ev) api.agendar(ev);
+            }
+          }
           this.estado('no ar — pode falar', 'no-ar');
         }
       }
